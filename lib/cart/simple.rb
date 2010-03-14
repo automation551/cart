@@ -11,14 +11,14 @@ class Cart
     cart = Cart.new
     unless data.nil?
       data = YAML::load(data)
-      cart.items = data.map { |id| @config.product_model.get(id) }
+      cart.items = data.map { |id| @config.product_model.find(id) }
     end
     return cart
   end
 
   # returns array of products
   def items
-    @items.map { |item| @config.product_model.get(item) }
+    @items.map { |item| @config.product_model.find(item) }
   end
 
   def inspect
@@ -38,16 +38,16 @@ class Cart
   end
 
   def save
-    @items.map { |product| product.id }.to_yaml
+    @items.map { |product| {product.id => product.count} }.to_yaml
   end
 
   def add(product, count = 1)
-    raise ArgumentError unless product.kind_of(@config.product_model)
+    raise ArgumentError unless product.kind_of?(@config.product_model)
     if item = find(product)
       item.count += count
     else
       struct = CartItem.new
-      struct.id = id
+      struct.id = product.id
       struct.count = count
       @items.push(struct)
     end
